@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
   try {
-    console.log(process.env.MONGO_URI);
+    // console.log(process.env.MONGO_URI);
     if (!process.env.MONGO_URI) {
       throw new Error(`Environment variable is not set for MONGO`);
     }
