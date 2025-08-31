@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       trim: true,
+      unique: true,
+      sparse: true,
       lowercase: true,
       validate: {
         validator: isEmail,
@@ -220,7 +222,6 @@ const userSchema = new mongoose.Schema(
 
 // ---------- Indexes ----------
 userSchema.index({ phone: 1 }, { unique: true }, { sparse: true });
-userSchema.index({ email: 1 }, { unique: true }, { sparse: true });
 userSchema.index({ accountStatus: 1 });
 // Auto delete expired OTPs
 userSchema.index(

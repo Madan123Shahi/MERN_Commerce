@@ -1,3 +1,47 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
 
-export const store = configureStore({});
+const authSlice = createSlice({
+  name: "auth",
+  initialState: {
+    phone: "",
+    isVerified: false,
+    loading: false,
+    error: null,
+    message: null,
+  },
+  reducers: {
+    setPhone: (state, action) => {
+      state.phone = action.payload;
+    },
+    setVerified: (state, action) => {
+      state.isVerified = action.payload;
+    },
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action) => {
+      state.error = action.payload;
+    },
+    setMessage: (state, action) => {
+      state.message = action.payload;
+    },
+    reset: (state) => {
+      (state.error = null), (state.message = null);
+    },
+  },
+});
+
+export const {
+  setPhone,
+  setVerified,
+  setLoading,
+  setMessage,
+  setError,
+  reset,
+} = authSlice.actions;
+
+export const store = configureStore({
+  reducer: {
+    auth: authSlice.reducer,
+  },
+});
