@@ -38,7 +38,7 @@ const Registration = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-6 mx-auto bg-white   shadow rounded-2xl"
+      className="p-6 mx-auto   shadow rounded-2xl bg-gray-100"
     >
       <h2 className="text-xl font-bold mb-4">Register with phone</h2>
       <input
