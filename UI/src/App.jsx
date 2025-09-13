@@ -5,7 +5,7 @@ const App = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-white">
       <Header className="sticky top-0 z-50 " />
-      <main className="flex-1 flex justify-center items-center p-4">
+      <main className="flex-1 flex justify-center items-center pt-22">
         <Routes>
           <Route path="/" element={<Registration />} />
         </Routes>

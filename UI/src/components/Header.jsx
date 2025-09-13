@@ -43,6 +43,7 @@ const languages = [
 ];
 
 const categories = [
+  { name: "All Categories" },
   { name: "Mobiles & Tablets" },
   { name: "Fashion" },
   { name: "Electronics" },
@@ -54,7 +55,7 @@ const categories = [
 
 const Header = ({ className = "" }) => {
   const [selected, setSelected] = useState(languages[0]);
-  const [selectedCategory, setSelectedCategory] = useState("Categories");
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const [focusArea, setFocusArea] = useState(null); // "category" | "searchbar" | "button"
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -126,7 +127,7 @@ const Header = ({ className = "" }) => {
         <div>
           <a>
             <img
-              className="h-8 sm:h-10 md:h-12 brightness-0 invert cursor-pointer transition-transform duration-300 hover:rotate-2 hover:scale-105 rounded-lg"
+              className="max-h-14 sm:max-h-16 md:max-h-18 w-auto brightness-0 invert cursor-pointer transition-transform duration-300 hover:rotate-2 hover:scale-105 rounded-lg"
               src={logo}
               alt="logo"
             />
@@ -139,7 +140,7 @@ const Header = ({ className = "" }) => {
             Deals
           </a>
           <a href="#" className="hover:text-blue-100">
-            What's New
+            Latest
           </a>
           <a href="#" className="hover:text-blue-100">
             Delivery
@@ -149,7 +150,7 @@ const Header = ({ className = "" }) => {
         {/* Mobile Hamburger */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden text-white ml-2"
+          className="md:hidden text-white ml-1"
         >
           {mobileMenuOpen ? (
             <XMarkIcon className="h-7 w-7" />
@@ -172,24 +173,25 @@ const Header = ({ className = "" }) => {
               <>
                 <MenuButton
                   onClick={() => setFocusArea("category")}
-                  className={`hidden sm:flex items-center px-3 py-3 text-white rounded-l-md text-base border-r border-white/30
+                  className={`hidden sm:flex items-center
+                     px-3 py-3 text-white rounded-l-md text-xs border-r border-white/30 max-w-54
                     ${
                       focusArea === "category"
                         ? "ring-2 ring-white ring-offset-1 hover:bg-blue-400"
                         : ""
                     }`}
                 >
-                  {selectedCategory}
-                  <ChevronDownIcon className="ml-1 h-4 w-4" />
+                  {selectedCategory.name}
+                  <ChevronDownIcon className="ml-1 h-6 w-4 " />
                 </MenuButton>
 
-                <MenuItems className="absolute left-0 mt-1 w-48 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto z-50 text-blue-500">
+                <MenuItems className="absolute left-0 mt-1 w-50 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto z-50 text-blue-500 no-scrollbar">
                   {categories.map((category) => (
                     <MenuItem
                       key={category.name}
                       as="button"
                       onClick={() => {
-                        setSelectedCategory(category.name);
+                        setSelectedCategory(category);
                         setFocusArea("searchbar"); // highlight whole search bar
                         focusInputNextTick();
                       }}
@@ -237,7 +239,7 @@ const Header = ({ className = "" }) => {
 
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-blue-600 px-6 pb-4 space-y-2 text-sm sm:text-base">
+        <div className="md:hidden absolute px-6 space-y-2 text-sm max-w-36 bg-blue-500 text-white border-t border-t-white border-l border-l-white">
           <a href="#" className="block py-2 hover:text-blue-100">
             Deals
           </a>
