@@ -153,9 +153,9 @@ const Header = ({ className = "" }) => {
           className="md:hidden text-white ml-1"
         >
           {mobileMenuOpen ? (
-            <XMarkIcon className="h-7 w-7" />
+            <XMarkIcon className="h-7 w-7 transition-transform duration-300 hover:rotate-2 hover:scale-105" />
           ) : (
-            <Bars3Icon className="h-7 w-7" />
+            <Bars3Icon className="h-7 w-7 transition-transform duration-300 hover:rotate-2 hover:scale-105" />
           )}
         </button>
 
@@ -174,18 +174,18 @@ const Header = ({ className = "" }) => {
                 <MenuButton
                   onClick={() => setFocusArea("category")}
                   className={`hidden sm:flex items-center
-                     px-3 py-3 text-white rounded-l-md text-xs border-r border-white/30 max-w-54
+                     px-3 py-3 text-white rounded-l-md text-xs border-r border-white/30 w-28 truncate hover:bg-blue-400
                     ${
                       focusArea === "category"
                         ? "ring-2 ring-white ring-offset-1 hover:bg-blue-400"
                         : ""
                     }`}
                 >
-                  {selectedCategory.name}
-                  <ChevronDownIcon className="ml-1 h-6 w-4 " />
+                  <span className="truncate">{selectedCategory.name}</span>
+                  <ChevronDownIcon className="ml-1 h-6 w-4 flex shrink-0" />
                 </MenuButton>
 
-                <MenuItems className="absolute left-0 mt-1 w-50 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto z-50 text-blue-500 no-scrollbar">
+                <MenuItems className="absolute left-0 mt-1 w-46 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto z-50 text-blue-500 no-scrollbar ring-2 ring-blue-400">
                   {categories.map((category) => (
                     <MenuItem
                       key={category.name}
