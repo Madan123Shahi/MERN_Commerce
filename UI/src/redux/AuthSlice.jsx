@@ -1,14 +1,16 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 
+const initialState = {
+  phone: "",
+  isVerified: false,
+  loading: false,
+  error: null,
+  message: null,
+};
+
 const authSlice = createSlice({
   name: "auth",
-  initialState: {
-    phone: "",
-    isVerified: false,
-    loading: false,
-    error: null,
-    message: null,
-  },
+  initialState,
   reducers: {
     setPhone: (state, action) => {
       state.phone = action.payload;

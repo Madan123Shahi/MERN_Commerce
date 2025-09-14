@@ -122,12 +122,12 @@ const Header = ({ className = "" }) => {
       </div>
 
       {/* Main Header */}
-      <div className="flex items-center justify-between px-6 gap-6 bg-blue-500 text-white font-semibold text-base py-3">
+      <div className="flex items-center justify-between px-6 gap-6 bg-blue-500 text-white font-semibold text-base py-0.5">
         {/* Logo */}
         <div>
           <a>
             <img
-              className="max-h-14 sm:max-h-16 md:max-h-18 w-auto brightness-0 invert cursor-pointer transition-transform duration-300 hover:rotate-2 hover:scale-105 rounded-lg"
+              className=" h-14 w-14 object-contain brightness-0 invert cursor-pointer transition-transform duration-300 hover:rotate-2 hover:scale-105 rounded-lg "
               src={logo}
               alt="logo"
             />
@@ -136,6 +136,15 @@ const Header = ({ className = "" }) => {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex text-base gap-6">
+          <a href="#" className="hover:text-blue-100">
+            Men
+          </a>
+          <a href="#" className="hover:text-blue-100">
+            Women
+          </a>
+          <a href="#" className="hover:text-blue-100">
+            Kids
+          </a>
           <a href="#" className="hover:text-blue-100">
             Deals
           </a>
@@ -240,6 +249,15 @@ const Header = ({ className = "" }) => {
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden absolute px-6 space-y-2 text-sm max-w-36 bg-blue-500 text-white border-t border-t-white border-l border-l-white">
+          <a href="#" className="block py-2 hover:text-blue-100">
+            Men
+          </a>
+          <a href="#" className="block py-2 hover:text-blue-100">
+            Women
+          </a>
+          <a href="#" className="block py-2 hover:text-blue-100">
+            Kids
+          </a>
           <a href="#" className="block py-2 hover:text-blue-100">
             Deals
           </a>
