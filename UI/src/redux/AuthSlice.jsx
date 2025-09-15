@@ -1,4 +1,4 @@
-import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   phone: "",
@@ -42,8 +42,4 @@ export const {
   reset,
 } = authSlice.actions;
 
-export const store = configureStore({
-  reducer: {
-    auth: authSlice.reducer,
-  },
-});
+export default authSlice.reducer;

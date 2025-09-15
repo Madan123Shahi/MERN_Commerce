@@ -13,12 +13,8 @@ const Registration = () => {
   const dispatch = useDispatch();
   const phone = useSelector((state) => state.auth.phone);
   const loading = useSelector((state) => state.auth.loading);
-  const message = useSelector((state) => {
-    state.auth.message;
-  });
-  const error = useSelector((state) => {
-    state.auth.error;
-  });
+  const message = useSelector((state) => state.auth.message);
+  const error = useSelector((state) => state.auth.error);
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

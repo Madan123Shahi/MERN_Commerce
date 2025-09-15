@@ -1,4 +1,4 @@
-import { configureStore, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   code: "en",
@@ -18,8 +18,4 @@ const languageSlice = createSlice({
 
 export const { setLanguage } = languageSlice.actions;
 
-export const store = configureStore({
-  reducer: {
-    language: languageSlice.reducer,
-  },
-});
+export default languageSlice.reducer;
