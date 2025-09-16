@@ -100,24 +100,39 @@ const Header = ({ className = "" }) => {
           </a>
         </div>
 
-        {/* Language Dropdown */}
+        {/* Language Dropdown (Hover + Click) */}
         <Menu as="div" className="relative">
-          <MenuButton className="inline-flex gap-1 items-center hover:text-blue-400 w-40 justify-end">
-            {selected.name}
-            <ChevronDownIcon className="h-4 w-4" />
-          </MenuButton>
-          <MenuItems className="absolute right-0 mt-2 w-47 origin-top-right bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto text-gray-800 no-scrollbar">
-            {languages.map((lang) => (
-              <MenuItem
-                key={lang.code}
-                as="button"
-                onClick={() => setSelected(lang)}
-                className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-blue-500 hover:text-blue-400"
-              >
-                {lang.name}
-              </MenuItem>
-            ))}
-          </MenuItems>
+          {({ open }) => (
+            <div
+              onMouseEnter={(e) =>
+                e.currentTarget.querySelector("button")?.click()
+              }
+              onMouseLeave={(e) => {
+                if (open) e.currentTarget.querySelector("button")?.click();
+              }}
+            >
+              <MenuButton className="inline-flex gap-1 items-center hover:text-blue-400 w-40 justify-end focus:outline-none">
+                {selected.name}
+                <ChevronDownIcon
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    open ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              </MenuButton>
+              <MenuItems className="absolute right-0 mt-2 w-47 origin-top-right bg-white border border-gray-200 rounded-md shadow-lg max-h-80 overflow-y-auto text-gray-800 no-scrollbar focus:outline-none">
+                {languages.map((lang) => (
+                  <MenuItem
+                    key={lang.code}
+                    as="button"
+                    onClick={() => setSelected(lang)}
+                    className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 text-blue-500 hover:text-blue-400"
+                  >
+                    {lang.name}
+                  </MenuItem>
+                ))}
+              </MenuItems>
+            </div>
+          )}
         </Menu>
       </div>
 
@@ -176,14 +191,22 @@ const Header = ({ className = "" }) => {
               focusArea === "searchbar" ? "ring-2 ring-white ring-offset-1" : ""
             }`}
         >
-          {/* Category Dropdown */}
+          {/* Category Dropdown (Hover + Click) */}
           <Menu as="div" className="relative">
             {({ open }) => (
-              <>
+              <div
+                onMouseEnter={(e) =>
+                  e.currentTarget.querySelector("button")?.click()
+                }
+                onMouseLeave={(e) => {
+                  if (open) e.currentTarget.querySelector("button")?.click();
+                }}
+              >
                 <MenuButton
                   onClick={() => setFocusArea("category")}
                   className={`hidden sm:flex items-center
                      px-3 py-3 text-white rounded-l-md text-xs border-r border-white/30 w-22 truncate hover:bg-blue-400
+                     focus:outline-none
                     ${
                       focusArea === "category"
                         ? "ring-2 ring-white ring-offset-1 hover:bg-blue-400"
@@ -191,10 +214,14 @@ const Header = ({ className = "" }) => {
                     }`}
                 >
                   <span className="truncate">{selectedCategory.name}</span>
-                  <ChevronDownIcon className="ml-1 h-6 w-4 flex shrink-0" />
+                  <ChevronDownIcon
+                    className={`ml-1 h-6 w-4 flex shrink-0 transition-transform duration-200 ${
+                      focusArea === "category" ? "rotate-180" : "rotate-0"
+                    }`}
+                  />
                 </MenuButton>
 
-                <MenuItems className="absolute left-0 mt-1 w-46 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto z-50 text-blue-500 no-scrollbar ring-2 ring-blue-400">
+                <MenuItems className="absolute left-0 mt-1 w-46 origin-top-left bg-white border border-gray-200 rounded-md shadow-lg max-h-64 overflow-y-auto z-50 text-blue-500 no-scrollbar ring-2 ring-blue-400 focus:outline-none">
                   {categories.map((category) => (
                     <MenuItem
                       key={category.name}
@@ -210,7 +237,7 @@ const Header = ({ className = "" }) => {
                     </MenuItem>
                   ))}
                 </MenuItems>
-              </>
+              </div>
             )}
           </Menu>
 
