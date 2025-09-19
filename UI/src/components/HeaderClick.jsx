@@ -117,11 +117,7 @@ const Header = ({ className = "" }) => {
                     className={`hidden sm:flex items-center
                        px-3 py-3 text-white rounded-l-md text-base border-r-4 border-white w-22 truncate hover:bg-blue-400
                        focus:outline-none
-                      ${
-                        focusArea === "category"
-                          ? "ring-0 ring-white ring-offset-1 hover:bg-blue-400"
-                          : ""
-                      }`}
+                      ${focusArea === "category" ? " hover:bg-blue-400" : ""}`}
                   >
                     <span className="truncate " title={selectedCategory.name}>
                       {selectedCategory.name}
