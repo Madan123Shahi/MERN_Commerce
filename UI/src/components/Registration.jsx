@@ -4,7 +4,6 @@ import {
   setError,
   setLoading,
   setMessage,
-  reset,
 } from "../redux/AuthSlice.jsx";
 
 import api from "../api/client.jsx";

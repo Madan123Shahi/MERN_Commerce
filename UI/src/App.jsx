@@ -1,4 +1,5 @@
 import Header from "./components/Header";
+// import Header from './components/HeaderAmazon'
 import { Routes, Route } from "react-router-dom";
 import Registration from "./components/Registration";
 import Home from "./pages/Home";
