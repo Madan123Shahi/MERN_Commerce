@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import logo from "../images/E-Commerce.jpg";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 const categories = {
   electronics: {
@@ -82,6 +82,7 @@ const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const dropdownRef = useRef(null);
 
   const capitalize = (s) =>
@@ -98,11 +99,40 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectMain = (main) => {
+  const handleSelectMain = useCallback((main) => {
     setSelectedCategory(capitalize(main));
     setShowSuggestions(false);
     setHoveredCategory(null);
-  };
+  }, []);
+
+  // 🔹 Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!showSuggestions) return;
+
+      const mainCategories = Object.keys(categories);
+
+      if (event.key === "ArrowDown") {
+        setHighlightedIndex((prev) => {
+          const nextIndex = prev + 1 < mainCategories.length ? prev + 1 : 0;
+          setHoveredCategory(mainCategories[nextIndex]); // ✅ sync right panel
+          return nextIndex;
+        });
+      } else if (event.key === "ArrowUp") {
+        setHighlightedIndex((prev) => {
+          const nextIndex = prev - 1 >= 0 ? prev - 1 : mainCategories.length - 1;
+          setHoveredCategory(mainCategories[nextIndex]); // ✅ sync right panel
+          return nextIndex;
+        });
+      } else if (event.key === "Enter") {
+        const selected = mainCategories[highlightedIndex];
+        handleSelectMain(selected);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showSuggestions, highlightedIndex, handleSelectMain]);
 
   const handleSelectSub = (main, sub) => {
     setSelectedCategory(`${capitalize(main)} → ${sub}`);
@@ -130,7 +160,7 @@ const Header = () => {
         <div className="p-3 bg-white rounded-full">
           <button
             onClick={() => setShowSuggestions((s) => !s)}
-            className="cursor-pointer flex items-center gap-2.5"
+            className="cursor-pointer flex items-center gap-2.5 outline-none"
             aria-expanded={showSuggestions}
           >
             <span className="font-semibold">{selectedCategory}</span>
@@ -140,26 +170,28 @@ const Header = () => {
 
         {showSuggestions && (
           <div
-            className="absolute top-full left-0 mt-2 bg-white border rounded shadow-md z-20 flex max-h-[420px] overflow-hidden"
+            className="absolute top-full left-0 mt-2 bg-white border rounded shadow-md z-20 flex max-h-[470px] overflow-hidden "
             onMouseLeave={() => setHoveredCategory(null)}
           >
             {/* Left column: main categories */}
-            <div className="w-56 overflow-auto">
-              {Object.keys(categories).map((cat) => (
+            <div className="w-56 no-scrollbar  ">
+              {Object.keys(categories).map((cat, index) => (
                 <div
                   key={cat}
-                  onMouseEnter={() => setHoveredCategory(cat)}
+                  onMouseEnter={() => {setHoveredCategory(cat)
+                    setHighlightedIndex(index)
+                  }}
                   onClick={() => handleSelectMain(cat)}
-                  className={`px-4 py-3 hover:bg-gray-100 cursor-pointer ${
-                    hoveredCategory === cat ? "bg-gray-100 font-semibold" : ""
-                  }`}
+                  className={`px-4 py-3 cursor-pointer ${
+                    highlightedIndex === index ? "bg-gray-200 font-bold" : ""
+                  } ${hoveredCategory === cat ? "bg-gray-100 font-semibold" : ""}`}
                 >
                   {capitalize(cat)}
                 </div>
               ))}
             </div>
 
-            {/* Right column: only shows when hovered */}
+            {/* Right column: only shows when hovered OR keyboard highlights */}
             {hoveredCategory && (
               <div className="w-[500px] border-l overflow-auto bg-gray-50 p-3">
                 {Object.keys(categories[hoveredCategory]).map((sub) => (
@@ -175,9 +207,7 @@ const Header = () => {
                         <div
                           key={item}
                           className="truncate hover:underline cursor-pointer"
-                          onClick={() =>
-                            handleSelectItem(hoveredCategory, sub, item)
-                          }
+                          onClick={() => handleSelectItem(hoveredCategory, sub, item)}
                         >
                           {item}
                         </div>
