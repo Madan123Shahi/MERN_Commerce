@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import logo from "../images/E-Commerce.jpg";
 import { useState, useRef, useEffect, useCallback } from "react";
-
+import { Search } from "lucide-react";
 const categories = {
   electronics: {
     "Mobiles & Accessories": [
@@ -139,20 +139,34 @@ const categories = {
 };
 
 const Header = () => {
+  // 🔹 Mega-dropdown states
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [isInSub, setIsInSub] = useState(false);
   const dropdownRef = useRef(null);
-  const [searchInput, setSearchInput] = useState("");
+
+  // 🔹 Search bar states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
+  const [selectedItem, setSelectedItem] = useState("");
 
   const capitalize = (s) =>
     typeof s === "string" && s.length > 0
       ? s.charAt(0).toUpperCase() + s.slice(1)
       : s;
 
+  const handleSearch = () => {
+    alert(
+      `Searching for "${searchTerm}" in ${selectedCategory}${
+        selectedSubCategory ? " → " + selectedSubCategory : ""
+      }${selectedItem ? " → " + selectedItem : ""}`
+    );
+  };
+
+  // 🔹 Dropdown outside click close
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -165,26 +179,26 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // 🔹 Mega dropdown select
   const handleSelectMain = useCallback((main) => {
     setSelectedCategory(capitalize(main));
     setShowSuggestions(false);
     setHoveredCategory(null);
     setIsInSub(false);
+    setSelectedSubCategory("");
+    setSelectedItem("");
   }, []);
 
   const handleSelectItem = (main, sub, item) => {
-    setSelectedCategory(`${capitalize(main)} → ${sub} → ${item}`);
+    setSelectedCategory(capitalize(main));
+    setSelectedSubCategory(sub);
+    setSelectedItem(item);
     setShowSuggestions(false);
     setHoveredCategory(null);
     setIsInSub(false);
   };
 
-  const handleSearch = () => {
-    console.log("Search clicked:", selectedCategory, searchInput);
-    // Add search logic here
-  };
-
-  // Keyboard navigation
+  // 🔹 Keyboard navigation for mega dropdown
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!showSuggestions) return;
@@ -229,8 +243,8 @@ const Header = () => {
             prev - 1 >= 0 ? prev - 1 : flatSub.length - 1
           );
         } else if (event.key === "ArrowLeft") {
-          if (subIndex === 0) setIsInSub(false);
-          else setSubIndex((prev) => prev - 1);
+          setIsInSub(false);
+          setSubIndex(0);
         } else if (event.key === "Enter") {
           const { sub, item } = flatSub[subIndex];
           handleSelectItem(currentMain, sub, item);
@@ -249,15 +263,32 @@ const Header = () => {
     handleSelectMain,
   ]);
 
+  // 🔹 Auto-scroll for sub items
   useEffect(() => {
     if (isInSub && showSuggestions) {
       const el = document.getElementById(`sub-item-${subIndex}`);
-      if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      if (el) {
+        el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
     }
   }, [subIndex, isInSub, showSuggestions]);
 
+  // 🔹 Build options for search dropdowns
+  const mainOptions = ["All", ...Object.keys(categories).map(capitalize)];
+  const subOptions =
+    selectedCategory !== "All" && categories[selectedCategory.toLowerCase()]
+      ? Object.keys(categories[selectedCategory.toLowerCase()])
+      : [];
+  const itemOptions =
+    selectedCategory !== "All" &&
+    selectedSubCategory &&
+    categories[selectedCategory.toLowerCase()] &&
+    categories[selectedCategory.toLowerCase()][selectedSubCategory]
+      ? categories[selectedCategory.toLowerCase()][selectedSubCategory]
+      : [];
+
   return (
-    <div className="w-full flex items-center gap-4 bg-blue-500 px-4 py-2">
+    <div className="w-full flex items-center gap-8 bg-blue-500 px-4 py-2">
       {/* Logo */}
       <Link to="/">
         <img
@@ -267,109 +298,165 @@ const Header = () => {
         />
       </Link>
 
-      {/* Unified search bar: dropdown + input + button */}
-      <div className="flex flex-1 max-w-2xl rounded-full" ref={dropdownRef}>
-        {/* Categories dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowSuggestions((s) => !s)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 border-2 border-white border-r-0 rounded-l-full font-semibold cursor-pointer hover:bg-blue-400 text-white"
+      {/* 🔹 Amazon-style Search Bar */}
+      <div className="flex flex-1 max-w-5xl">
+        {/* Main Category */}
+        <select
+          value={selectedCategory}
+          onChange={(e) => {
+            setSelectedCategory(e.target.value);
+            setSelectedSubCategory("");
+            setSelectedItem("");
+          }}
+          className="px-3 py-2 border border-gray-300 rounded-l-md text-sm bg-gray-100 hover:bg-gray-200 focus:outline-none"
+        >
+          {mainOptions.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+
+        {/* Subcategory */}
+        {subOptions.length > 0 && (
+          <select
+            value={selectedSubCategory}
+            onChange={(e) => {
+              setSelectedSubCategory(e.target.value);
+              setSelectedItem("");
+            }}
+            className="px-3 py-2 border border-gray-300 text-sm bg-gray-100 hover:bg-gray-200 focus:outline-none"
           >
-            {selectedCategory} <span className="text-sm text-white">▼</span>
-          </button>
+            <option value="">All Subcategories</option>
+            {subOptions.map((sub) => (
+              <option key={sub} value={sub}>
+                {sub}
+              </option>
+            ))}
+          </select>
+        )}
 
-          {showSuggestions && (
-            <div
-              className="absolute top-full left-0 mt-2 bg-white border rounded shadow-md z-20 flex max-h-[470px] overflow-hidden"
-              onMouseLeave={() => {
-                setHoveredCategory(null);
-                setIsInSub(false);
-              }}
-            >
-              {/* Left column: main categories */}
-              <div className="w-56 no-scrollbar">
-                {Object.keys(categories).map((cat, index) => (
-                  <div
-                    key={cat}
-                    onMouseEnter={() => {
-                      setHoveredCategory(cat);
-                      setHighlightedIndex(index);
-                    }}
-                    onClick={() => handleSelectMain(cat)}
-                    className={`px-4 py-3 cursor-pointer ${
-                      highlightedIndex === index && !isInSub
-                        ? "bg-gray-200 font-bold"
-                        : ""
-                    } ${
-                      hoveredCategory === cat ? "bg-gray-100 font-semibold" : ""
-                    }`}
-                  >
-                    {capitalize(cat)}
-                  </div>
-                ))}
-              </div>
-
-              {/* Right column: subcategories + items */}
-              {hoveredCategory && (
-                <div className="w-[500px] border-l overflow-auto bg-gray-50 p-3 max-h-[470px]">
-                  {Object.keys(categories[hoveredCategory]).map(
-                    (sub, subIdx) => (
-                      <div key={sub} className="mb-4">
-                        <div className="font-semibold mb-2">{sub}</div>
-                        <div className="grid grid-cols-3 gap-2 text-sm text-gray-700">
-                          {categories[hoveredCategory][sub].map((item, idx) => {
-                            const globalIndex =
-                              Object.keys(categories[hoveredCategory])
-                                .slice(0, subIdx)
-                                .reduce(
-                                  (acc, s) =>
-                                    acc + categories[hoveredCategory][s].length,
-                                  0
-                                ) + idx;
-
-                            return (
-                              <div
-                                key={item}
-                                id={`sub-item-${globalIndex}`}
-                                className={`truncate cursor-pointer ${
-                                  isInSub && subIndex === globalIndex
-                                    ? "bg-yellow-200 font-semibold"
-                                    : "hover:underline"
-                                }`}
-                                onClick={() =>
-                                  handleSelectItem(hoveredCategory, sub, item)
-                                }
-                              >
-                                {item}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        {/* Item */}
+        {itemOptions.length > 0 && (
+          <select
+            value={selectedItem}
+            onChange={(e) => setSelectedItem(e.target.value)}
+            className="px-3 py-2 border border-gray-300 text-sm bg-gray-100 hover:bg-gray-200 focus:outline-none"
+          >
+            <option value="">All Items</option>
+            {itemOptions.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Input */}
         <input
           type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Search products..."
-          className="flex-1 p-2 border-2 bg-blue-500 placeholder:text-white placeholder:font-semibold placeholder:text-center caret-white border-white   outline-none hover:bg-blue-400"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search Amazon.in"
+          className="flex-1 px-4 py-2 border-t border-b border-gray-300 focus:outline-none"
         />
 
-        {/* Search Button */}
+        {/* Button */}
         <button
           onClick={handleSearch}
-          className="bg-blue-500 px-5 py-2 border-2 border-white border-l-0 rounded-r-full font-semibold hover:bg-blue-400 cursor-pointer text-white"
+          className="px-4 bg-yellow-400 border border-yellow-500 rounded-r-md hover:bg-yellow-500 flex items-center justify-center"
         >
-          Search
+          <Search className="w-5 h-5 text-gray-700" />
         </button>
+      </div>
+
+      {/* 🔹 Mega dropdown button (still works with hover/keyboard) */}
+      <div className="relative" ref={dropdownRef}>
+        <div className="p-3 bg-white rounded-full">
+          <button
+            onClick={() => setShowSuggestions((s) => !s)}
+            className="cursor-pointer flex items-center gap-2.5 outline-none"
+            aria-expanded={showSuggestions}
+          >
+            <span className="font-semibold">{selectedCategory}</span>
+            <span className="text-sm text-blue-500">
+              {String.fromCharCode(9660)}
+            </span>
+          </button>
+        </div>
+
+        {showSuggestions && (
+          <div
+            className="absolute top-full left-0 mt-2 bg-white border rounded shadow-md z-20 flex max-h-[470px] overflow-hidden"
+            onMouseLeave={() => {
+              setHoveredCategory(null);
+              setIsInSub(false);
+            }}
+          >
+            {/* Left col */}
+            <div className="w-56 no-scrollbar">
+              {Object.keys(categories).map((cat, index) => (
+                <div
+                  key={cat}
+                  onMouseEnter={() => {
+                    setHoveredCategory(cat);
+                    setHighlightedIndex(index);
+                  }}
+                  onClick={() => handleSelectMain(cat)}
+                  className={`px-4 py-3 cursor-pointer ${
+                    highlightedIndex === index && !isInSub
+                      ? "bg-gray-200 font-bold"
+                      : ""
+                  } ${
+                    hoveredCategory === cat ? "bg-gray-100 font-semibold" : ""
+                  }`}
+                >
+                  {capitalize(cat)}
+                </div>
+              ))}
+            </div>
+
+            {/* Right col */}
+            {hoveredCategory && (
+              <div className="w-[500px] border-l overflow-auto bg-gray-50 p-3 max-h-[470px]">
+                {Object.keys(categories[hoveredCategory]).map((sub, subIdx) => (
+                  <div key={sub} className="mb-4">
+                    <div className="font-semibold mb-2">{sub}</div>
+                    <div className="grid grid-cols-3 gap-2 text-sm text-gray-700">
+                      {categories[hoveredCategory][sub].map((item, idx) => {
+                        const globalIndex =
+                          Object.keys(categories[hoveredCategory])
+                            .slice(0, subIdx)
+                            .reduce(
+                              (acc, s) =>
+                                acc + categories[hoveredCategory][s].length,
+                              0
+                            ) + idx;
+
+                        return (
+                          <div
+                            key={item}
+                            id={`sub-item-${globalIndex}`}
+                            className={`truncate cursor-pointer ${
+                              isInSub && subIndex === globalIndex
+                                ? "bg-yellow-200 font-semibold"
+                                : "hover:underline"
+                            }`}
+                            onClick={() =>
+                              handleSelectItem(hoveredCategory, sub, item)
+                            }
+                          >
+                            {item}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
