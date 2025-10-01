@@ -140,25 +140,47 @@ const categories = {
 
 const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [subIndex, setSubIndex] = useState(0);
   const [isInSub, setIsInSub] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const languageDropdownRef = useRef(null);
   const [searchInput, setSearchInput] = useState("");
+  const [cartItems, setCartItems] = useState(3); // Example cart count
+
+  const languages = [
+    { code: "en", name: "English", flag: "🇺🇸" },
+    { code: "es", name: "Español", flag: "🇪🇸" },
+    { code: "fr", name: "Français", flag: "🇫🇷" },
+    { code: "de", name: "Deutsch", flag: "🇩🇪" },
+    { code: "hi", name: "हिन्दी", flag: "🇮🇳" },
+    { code: "zh", name: "中文", flag: "🇨🇳" },
+    { code: "ar", name: "العربية", flag: "🇸🇦" },
+  ];
+
+  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
 
   const capitalize = (s) =>
     typeof s === "string" && s.length > 0
       ? s.charAt(0).toUpperCase() + s.slice(1)
       : s;
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowSuggestions(false);
         setHoveredCategory(null);
         setIsInSub(false);
+      }
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target)
+      ) {
+        setShowLanguageDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -184,7 +206,12 @@ const Header = () => {
     // Add search logic here
   };
 
-  // Keyboard navigation
+  const handleLanguageSelect = (language) => {
+    setSelectedLanguage(language);
+    setShowLanguageDropdown(false);
+  };
+
+  // Keyboard navigation for categories
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (!showSuggestions) return;
@@ -257,119 +284,242 @@ const Header = () => {
   }, [subIndex, isInSub, showSuggestions]);
 
   return (
-    <div className="w-full flex items-center gap-4 bg-blue-500 px-4 py-2">
-      {/* Logo */}
-      <Link to="/">
-        <img
-          src={logo}
-          alt="Logo"
-          className="w-16 h-16 rounded-full shadow-md cursor-pointer tilt-animation hover:scale-110"
-        />
-      </Link>
+    <div className="w-full bg-gradient-to-r from-slate-900 to-slate-800 shadow-lg">
+      {/* Top Section */}
+      <div className="flex items-center justify-between px-6 py-3">
+        {/* Logo */}
+        <Link to="/" className="flex-shrink-0">
+          <img
+            src={logo}
+            alt="Logo"
+            className="w-16 h-16 rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110 border-2 border-emerald-400"
+          />
+        </Link>
 
-      {/* Unified search bar: dropdown + input + button */}
-      <div className="flex flex-1 max-w-2xl rounded-full" ref={dropdownRef}>
-        {/* Categories dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setShowSuggestions((s) => !s)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 border-2 border-white border-r-0 rounded-l-full font-semibold cursor-pointer hover:bg-blue-400 text-white"
-          >
-            {selectedCategory} <span className="text-sm text-white">▼</span>
-          </button>
-
-          {showSuggestions && (
-            <div
-              className="absolute top-full left-0 mt-2 bg-white border rounded shadow-md z-20 flex max-h-[470px] overflow-hidden"
-              onMouseLeave={() => {
-                setHoveredCategory(null);
-                setIsInSub(false);
-              }}
+        {/* Search Bar */}
+        <div
+          className="flex flex-1 max-w-2xl mx-8 rounded-lg shadow-lg"
+          ref={dropdownRef}
+        >
+          {/* Categories dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSuggestions((s) => !s)}
+              className="flex items-center gap-2 px-4 py-3 bg-emerald-600 border border-emerald-500 border-r-0 rounded-l-lg font-semibold cursor-pointer hover:bg-emerald-500 text-white outline-none transition-colors duration-200 min-w-[160px] justify-between"
             >
-              {/* Left column: main categories */}
-              <div className="w-56 no-scrollbar">
-                {Object.keys(categories).map((cat, index) => (
-                  <div
-                    key={cat}
-                    onMouseEnter={() => {
-                      setHoveredCategory(cat);
-                      setHighlightedIndex(index);
-                    }}
-                    onClick={() => handleSelectMain(cat)}
-                    className={`px-4 py-3 cursor-pointer ${
-                      highlightedIndex === index && !isInSub
-                        ? "bg-gray-200 font-bold"
-                        : ""
-                    } ${
-                      hoveredCategory === cat ? "bg-gray-100 font-semibold" : ""
-                    }`}
-                  >
-                    {capitalize(cat)}
-                  </div>
-                ))}
-              </div>
+              <span className="truncate">{selectedCategory}</span>
+              <span
+                className={`text-xs transition-transform duration-200 ${
+                  showSuggestions ? "rotate-180" : ""
+                }`}
+              >
+                ▼
+              </span>
+            </button>
 
-              {/* Right column: subcategories + items */}
-              {hoveredCategory && (
-                <div className="w-[500px] border-l overflow-auto bg-gray-50 p-3 max-h-[470px]">
-                  {Object.keys(categories[hoveredCategory]).map(
-                    (sub, subIdx) => (
-                      <div key={sub} className="mb-4">
-                        <div className="font-semibold mb-2">{sub}</div>
-                        <div className="grid grid-cols-3 gap-2 text-sm text-gray-700">
-                          {categories[hoveredCategory][sub].map((item, idx) => {
-                            const globalIndex =
-                              Object.keys(categories[hoveredCategory])
-                                .slice(0, subIdx)
-                                .reduce(
-                                  (acc, s) =>
-                                    acc + categories[hoveredCategory][s].length,
-                                  0
-                                ) + idx;
-
-                            return (
-                              <div
-                                key={item}
-                                id={`sub-item-${globalIndex}`}
-                                className={`truncate cursor-pointer ${
-                                  isInSub && subIndex === globalIndex
-                                    ? "bg-yellow-200 font-semibold"
-                                    : "hover:underline"
-                                }`}
-                                onClick={() =>
-                                  handleSelectItem(hoveredCategory, sub, item)
-                                }
-                              >
-                                {item}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )
-                  )}
+            {showSuggestions && (
+              <div
+                className="absolute top-full left-0 mt-1 rounded-lg shadow-xl z-20 flex max-h-[470px] overflow-hidden border border-gray-200"
+                onMouseLeave={() => {
+                  setHoveredCategory(null);
+                  setIsInSub(false);
+                }}
+              >
+                {/* Left column: main categories */}
+                <div className="w-56 bg-white font-semibold border-r border-gray-100">
+                  {Object.keys(categories).map((cat, index) => (
+                    <div
+                      key={cat}
+                      onMouseEnter={() => {
+                        setHoveredCategory(cat);
+                        setHighlightedIndex(index);
+                      }}
+                      onClick={() => handleSelectMain(cat)}
+                      className={`px-4 py-3 cursor-pointer transition-colors duration-150 border-l-2 ${
+                        highlightedIndex === index && !isInSub
+                          ? "bg-emerald-50 text-emerald-700 border-l-emerald-500 font-bold"
+                          : "border-l-transparent hover:bg-gray-50 text-gray-700"
+                      } ${hoveredCategory === cat ? "bg-gray-50" : ""}`}
+                    >
+                      {capitalize(cat)}
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          )}
+
+                {/* Right column: subcategories + items */}
+                {hoveredCategory && (
+                  <div className="w-[500px] bg-white p-4 max-h-[470px] overflow-auto">
+                    {Object.keys(categories[hoveredCategory]).map(
+                      (sub, subIdx) => (
+                        <div key={sub} className="mb-6">
+                          <div className="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide border-b border-gray-100 pb-2">
+                            {sub}
+                          </div>
+                          <div className="grid grid-cols-3 gap-3 text-sm">
+                            {categories[hoveredCategory][sub].map(
+                              (item, idx) => {
+                                const globalIndex =
+                                  Object.keys(categories[hoveredCategory])
+                                    .slice(0, subIdx)
+                                    .reduce(
+                                      (acc, s) =>
+                                        acc +
+                                        categories[hoveredCategory][s].length,
+                                      0
+                                    ) + idx;
+
+                                return (
+                                  <div
+                                    key={item}
+                                    id={`sub-item-${globalIndex}`}
+                                    className={`truncate cursor-pointer px-2 py-1 rounded transition-colors duration-150 ${
+                                      isInSub && subIndex === globalIndex
+                                        ? "bg-emerald-100 text-emerald-800 font-semibold border border-emerald-300"
+                                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+                                    }`}
+                                    onClick={() =>
+                                      handleSelectItem(
+                                        hoveredCategory,
+                                        sub,
+                                        item
+                                      )
+                                    }
+                                  >
+                                    {item}
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Input */}
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search for products, brands and more..."
+            className="flex-1 p-3 border border-gray-300 border-l-0 bg-white text-gray-800 placeholder-gray-500 outline-none focus:ring-2 focus:ring-emerald-300 focus:border-transparent"
+          />
+
+          {/* Search Button */}
+          <button
+            onClick={handleSearch}
+            className="bg-emerald-600 px-6 py-3 border border-emerald-500 border-l-0 rounded-r-lg font-semibold hover:bg-emerald-500 cursor-pointer text-white transition-colors duration-200 flex items-center gap-2"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            Search
+          </button>
         </div>
 
-        {/* Input */}
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Search products..."
-          className="flex-1 p-2 border-2 bg-blue-500 placeholder:text-white placeholder:font-semibold placeholder:text-center caret-white border-white   outline-none hover:bg-blue-400"
-        />
+        {/* Right Side Buttons */}
+        <div className="flex items-center gap-4">
+          {/* Language Selector */}
+          <div className="relative" ref={languageDropdownRef}>
+            <button
+              onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+              className="flex items-center gap-2 px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-colors duration-200"
+            >
+              <span className="text-lg">{selectedLanguage.flag}</span>
+              <span className="text-sm font-medium">
+                {selectedLanguage.code.toUpperCase()}
+              </span>
+              <span className="text-xs">▼</span>
+            </button>
 
-        {/* Search Button */}
-        <button
-          onClick={handleSearch}
-          className="bg-blue-500 px-5 py-2 border-2 border-white border-l-0 rounded-r-full font-semibold hover:bg-blue-400 cursor-pointer text-white"
-        >
-          Search
-        </button>
+            {showLanguageDropdown && (
+              <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-xl z-20 border border-gray-200">
+                {languages.map((language) => (
+                  <button
+                    key={language.code}
+                    onClick={() => handleLanguageSelect(language)}
+                    className={`flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
+                      selectedLanguage.code === language.code
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "text-gray-700"
+                    } first:rounded-t-lg last:rounded-b-lg`}
+                  >
+                    <span className="text-lg">{language.flag}</span>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">
+                        {language.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {language.code.toUpperCase()}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sign In */}
+          <Link
+            to="/signin"
+            className="flex flex-col items-start px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-colors duration-200 min-w-[80px]"
+          >
+            <span className="text-xs text-gray-300">Hello, Sign in</span>
+            <span className="text-sm font-bold">Account & Lists</span>
+          </Link>
+
+          {/* Returns & Orders */}
+          <Link
+            to="/orders"
+            className="flex flex-col items-start px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-colors duration-200 min-w-[80px]"
+          >
+            <span className="text-xs text-gray-300">Returns</span>
+            <span className="text-sm font-bold">& Orders</span>
+          </Link>
+
+          {/* Cart */}
+          <Link
+            to="/cart"
+            className="flex items-center gap-1 px-3 py-2 text-white hover:bg-slate-700 rounded-lg transition-colors duration-200 relative"
+          >
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold">{cartItems}</span>
+              <span className="text-xs font-medium">Cart</span>
+            </div>
+            {cartItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {cartItems}
+              </span>
+            )}
+          </Link>
+        </div>
       </div>
     </div>
   );
