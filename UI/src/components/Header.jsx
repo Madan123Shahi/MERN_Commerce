@@ -149,7 +149,7 @@ const Header = () => {
   const dropdownRef = useRef(null);
   const languageDropdownRef = useRef(null);
   const [searchInput, setSearchInput] = useState("");
-  const [cartItems, setCartItems] = useState(3); // Example cart count
+  const [cartItems, setCartItems] = useState(0); // Example cart count
 
   const languages = [
     { code: "en", name: "English", flag: "🇺🇸" },
@@ -284,7 +284,7 @@ const Header = () => {
   }, [subIndex, isInSub, showSuggestions]);
 
   return (
-    <div className="w-full bg-gradient-to-r from-slate-900 to-slate-800 shadow-lg">
+    <div className="w-full bg-gradient-to-r from-slate-900 to-slate-800 shadow-2xl">
       {/* Top Section */}
       <div className="flex items-center justify-between px-6 py-3">
         {/* Logo */}
@@ -292,7 +292,7 @@ const Header = () => {
           <img
             src={logo}
             alt="Logo"
-            className="w-16 h-16 rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110 border-2 border-emerald-400"
+            className="w-16 h-16 rounded-full shadow-lg transition-transform duration-300 cursor-pointer hover:scale-110 border-2 border-emerald-400"
           />
         </Link>
 
@@ -307,7 +307,7 @@ const Header = () => {
               onClick={() => setShowSuggestions((s) => !s)}
               className="flex items-center gap-2 px-4 py-3 bg-emerald-600 border border-emerald-500 border-r-0 rounded-l-lg font-semibold cursor-pointer hover:bg-emerald-500 text-white outline-none transition-colors duration-200 min-w-[160px] justify-between"
             >
-              <span className="truncate">{selectedCategory}</span>
+              <span>{selectedCategory}</span>
               <span
                 className={`text-xs transition-transform duration-200 ${
                   showSuggestions ? "rotate-180" : ""
@@ -322,7 +322,7 @@ const Header = () => {
                 className="absolute top-full left-0 mt-1 rounded-lg shadow-xl z-20 flex max-h-[470px] overflow-hidden border border-gray-200"
                 onMouseLeave={() => {
                   setHoveredCategory(null);
-                  setIsInSub(false);
+                  // setIsInSub(false);
                 }}
               >
                 {/* Left column: main categories */}
