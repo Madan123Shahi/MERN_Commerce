@@ -3,9 +3,20 @@ import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    name: { type: String, required: [true, "Name is required"], trim: true },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      minLength: 8,
+      select: false, // Prevents password from being returned in api responses
+    },
     role: { type: String, enum: ["user", "admin"], default: "user" },
   },
   { timestamps: true }
@@ -19,7 +30,8 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  return bcrypt.compare(enteredPassword, this.password);
+  // no need to await inside return b'cause bcrypt.compare already returns a promise
 };
 
 const User = mongoose.model("User", userSchema);

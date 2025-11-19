@@ -10,21 +10,25 @@ import productRoutes from "./routes/products.js";
 import cartRoutes from "./routes/cart.js";
 import orderRoutes from "./routes/orders.js";
 import uploadRoutes from "./routes/upload.js";
-import webhookRoutes from "./routes/webhook.js";
+// import webhookRoutes from "./routes/webhook.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 
-dotenv.config();
+// Switching automatically
+dotenv.config({
+  path: process.env.NODE_ENV === "production" ? ".env.production" : ".env",
+});
+
 connectDB();
 
 const app = express();
 
 // For Stripe webhook, we need raw body for the webhook route only. We'll use express.json with verify.
-import bodyParser from "body-parser";
+// import bodyParser from "body-parser";
 
-app.use((req, res, next) => {
-  // allow the webhook route to get raw body
-  if (req.originalUrl === "/api/webhook") return next();
-});
+// app.use((req, res, next) => {
+//   // allow the webhook route to get raw body
+//   if (req.originalUrl === "/api/webhook") return next();
+// });
 
 app.use(express.json());
 app.use(cookieParser());
@@ -40,11 +44,11 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/uploads", uploadRoutes);
 
 // Stripe webhook needs the raw body
-app.post(
-  "/api/webhook",
-  bodyParser.raw({ type: "application/json" }),
-  webhookRoutes
-);
+// app.post(
+//   "/api/webhook",
+//   bodyParser.raw({ type: "application/json" }),
+//   webhookRoutes
+// );
 
 // Error handler (should be last)
 app.use(notFound);
