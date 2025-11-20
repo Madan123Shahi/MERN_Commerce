@@ -3,12 +3,14 @@ const router = express.Router();
 
 import * as authController from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
+import { validate } from "../middleware/validate.js";
+import { loginSchema, registerSchema } from "../validations/userValidations.js";
 
 // Register user
-router.post("/register", authController.register);
+router.post("/register", validate(registerSchema), authController.register);
 
 // Login user
-router.post("/login", authController.login);
+router.post("/login", validate(loginSchema), authController.login);
 
 // Get logged-in user
 router.get("/me", protect, authController.getMe);

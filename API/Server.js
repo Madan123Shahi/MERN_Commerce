@@ -18,8 +18,6 @@ dotenv.config({
   path: process.env.NODE_ENV === "production" ? ".env.production" : ".env",
 });
 
-connectDB();
-
 const app = express();
 
 // For Stripe webhook, we need raw body for the webhook route only. We'll use express.json with verify.
@@ -55,4 +53,17 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+const start = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server is running successfully at PORT ${PORT}`);
+    });
+  } catch (err) {
+    res.status(500).json({ errors: err.errors });
+  }
+};
+
+start();

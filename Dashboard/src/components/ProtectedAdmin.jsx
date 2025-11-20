@@ -1,11 +1,16 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { getUser } from '../auth/useAuth';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 
-export default function ProtectedAdmin({ children }) {
-  const user = getUser();
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/admin/login" replace />;
-  }
+const ProtectedAdmin = ({ children, role }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <p className="text-center mt-20">Loading...</p>;
+
+  if (!user) return <Navigate to="/login" />; // not logged in
+
+  if (role && user.role !== role) return <Navigate to="/unauthorized" />; // role mismatch
+
   return children;
-}
+};
+
+export default ProtectedAdmin;

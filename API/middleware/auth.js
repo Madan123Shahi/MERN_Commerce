@@ -26,14 +26,14 @@
 //   }
 // };
 
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+
 export const admin = (req, res, next) => {
   if (req.user && req.user.role === "admin") return next();
   res.status(403);
   return next(new Error("Not authorized as admin"));
 };
-
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
