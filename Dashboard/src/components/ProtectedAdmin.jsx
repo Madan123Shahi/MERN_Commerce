@@ -1,16 +1,20 @@
+// src/components/ProtectedRoute.jsx
+import React from "react";
+import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
 
-const ProtectedAdmin = ({ children, role }) => {
+const ProtectedRoute = ({ children, adminRequired = false }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return <p className="text-center mt-20">Loading...</p>;
+  if (loading) return <div className="p-8">Loading...</div>;
 
-  if (!user) return <Navigate to="/login" />; // not logged in
+  if (!user) return <Navigate to="/login" replace />;
 
-  if (role && user.role !== role) return <Navigate to="/unauthorized" />; // role mismatch
+  if (adminRequired && user.role !== "admin") {
+    return <div className="p-8">Access denied: admins only</div>;
+  }
 
   return children;
 };
 
-export default ProtectedAdmin;
+export default ProtectedRoute;

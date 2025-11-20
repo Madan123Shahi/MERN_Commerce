@@ -1,10 +1,32 @@
-import React from 'react';
+import React from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import AdminLayout from "../components/AdminLayout";
+import Products from "./Products";
+import CreateProduct from "./CreateProduct";
 
-export default function Dashboard(){
+export default function Dashboard() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Overview</h1>
-      <p className="mt-4">Welcome to the admin dashboard.</p>
-    </div>
+    <AdminLayout>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <div>
+          <Link to="products" className="px-3 py-1 border rounded">
+            Products
+          </Link>
+          <Link
+            to="products/create"
+            className="px-3 py-1 ml-2 bg-blue-600 text-white rounded"
+          >
+            Add Product
+          </Link>
+        </div>
+      </div>
+
+      <Routes>
+        <Route path="/" element={<div>Welcome to admin dashboard</div>} />
+        <Route path="products" element={<Products />} />
+        <Route path="products/create" element={<CreateProduct />} />
+      </Routes>
+    </AdminLayout>
   );
 }

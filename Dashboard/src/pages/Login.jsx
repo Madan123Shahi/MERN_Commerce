@@ -1,67 +1,61 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import api from "../api/apiClient";
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
-
-const schema = yup.object({
-  email: yup.string().email("Invalid email").required("Email required"),
-  password: yup.string().required("Password required"),
-});
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({ resolver: yupResolver(schema) });
-
-  const onSubmit = async (data) => {
+  const submit = async (e) => {
+    e.preventDefault();
+    setError("");
     try {
-      const res = await api.post("/auth/login", data); // backend sets httpOnly cookie
-      login(res.data.user); // update context
-      navigate("/admin"); // redirect
+      await login(form.email, form.password);
+      navigate("/admin");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      setError(err?.response?.data?.message || "Login failed");
     }
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white p-6 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4 text-center">Admin Login</h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <input
-              {...register("email")}
-              type="email"
-              placeholder="Email"
-              className="w-full border rounded p-2"
-            />
-            <p className="text-sm text-red-500">{errors.email?.message}</p>
-          </div>
-          <div>
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Password"
-              className="w-full border rounded p-2"
-            />
-            <p className="text-sm text-red-500">{errors.password?.message}</p>
-          </div>
-          <button
-            disabled={isSubmitting}
-            className="w-full bg-emerald-600 text-white py-2 rounded"
-          >
-            {isSubmitting ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-md bg-white p-6 rounded shadow"
+      >
+        <h2 className="text-2xl font-semibold mb-4">Admin Login</h2>
+        {error && <div className="mb-3 text-red-600">{error}</div>}
+        <label className="block">
+          <span className="text-sm">Email</span>
+          <input
+            type="email"
+            required
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="mt-1 block w-full border rounded px-3 py-2"
+          />
+        </label>
+        <label className="block mt-3">
+          <span className="text-sm">Password</span>
+          <input
+            type="password"
+            required
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="mt-1 block w-full border rounded px-3 py-2"
+          />
+        </label>
+        <button className="mt-6 w-full py-2 bg-blue-600 text-white rounded">
+          Login
+        </button>
+        <div className="mt-3 text-sm text-center">
+          <a href="/register" className="text-blue-600">
+            Create admin account
+          </a>
+        </div>
+      </form>
     </div>
   );
 }
