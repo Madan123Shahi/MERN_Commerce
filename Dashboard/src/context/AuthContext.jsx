@@ -61,7 +61,14 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{ user, setUser, loading, login, logout, register, refresh }}
     >
-      {children}
+      {loading ? (
+        <div className="w-screen h-screen flex flex-col items-center justify-center bg-linear-to-br from-purple-600 to-blue-500 text-white">
+          <div className="animate-spin h-16 w-16 border-4 border-white border-t-transparent rounded-full mb-4"></div>
+          <h1 className="text-3xl font-bold">Loading your dashboard...</h1>
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 };
