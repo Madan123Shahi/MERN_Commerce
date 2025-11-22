@@ -4,9 +4,12 @@ export const registerSchema = yup.object({
   name: yup.string().trim().required("Name is required"),
   email: yup
     .string()
-    .lowercase()
     .trim()
-    .email("Invalid email")
+    .lowercase()
+    .matches(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      "Enter a valid email (must include @ and a domain)"
+    )
     .required("Email is required"),
   password: yup
     .string()
@@ -15,6 +18,7 @@ export const registerSchema = yup.object({
       "Password must be at least 8 characters long with one uppercase, one lowercase, one digit, and one special character"
     )
     .required("Password is required"),
+  secretKey: yup.string().required("Secret key is required"),
 });
 
 export const loginSchema = yup.object({
@@ -22,13 +26,16 @@ export const loginSchema = yup.object({
     .string()
     .trim()
     .lowercase()
-    .email("Invalid Email")
+    .matches(
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      "Enter a valid email (must include @ and a domain)"
+    )
     .required("Email is required"),
   password: yup
     .string()
     .matches(
       /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      "Password must be at least 8 characters long with one uppercase, one lowercase, one digit, and one special character"
+      "Password must be at least 8 characters long with one uppercas & lowercase letter, one digit and one special character"
     )
     .required("Password is required"),
 });
