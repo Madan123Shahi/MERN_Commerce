@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.input_base {
+  @apply border border-green-300 p-2 w-full rounded outline-none hover:ring-2 hover:ring-green-300;
+}
+
+.input_dropdown {
+  @apply border border-green-300 p-2 w-full rounded outline-none
+           hover:ring-2 hover:ring-green-300;
+}

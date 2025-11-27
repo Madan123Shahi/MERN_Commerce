@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import api from "../api/apiClient";
 import { useNavigate } from "react-router-dom";
 
+import CustomDropdown from "../components/CustomDropdown";
+
 export default function CreateProduct() {
   const navigate = useNavigate();
 
@@ -9,7 +11,7 @@ export default function CreateProduct() {
     name: "",
     description: "",
     category: "",
-    subcategory: "",
+    subCategory: "",
     brand: "Generic",
     price: "",
     discountPrice: "",
@@ -20,18 +22,23 @@ export default function CreateProduct() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [images, setImages] = useState([]);
-  const [variants, setVariants] = useState([{ color: "", size: "", stock: "" }]);
-
+  const [variants, setVariants] = useState([
+    { color: "", size: "", stock: "" },
+  ]);
   const [uploading, setUploading] = useState(false);
 
-  // --- Add Category / Subcategory Popup
+  // Add Category
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategory, setNewCategory] = useState("");
+  const [hideCategoryAddButton, setHideCategoryAddButton] = useState(false);
 
+  // Add Subcategory
   const [showAddSubcategory, setShowAddSubcategory] = useState(false);
   const [newSubcategory, setNewSubcategory] = useState("");
+  const [hideSubcategoryAddButton, setHideSubcategoryAddButton] =
+    useState(false);
 
-  // -------------------------------------- Load Categories
+  // Load Categories
   useEffect(() => {
     loadCategories();
   }, []);
@@ -41,10 +48,13 @@ export default function CreateProduct() {
     setCategories(res.data);
   };
 
-  // -------------------------------------- Load Subcategories
+  // Load subcategories when category changes
   useEffect(() => {
     if (!form.category) return;
     loadSubcategories(form.category);
+
+    setHideCategoryAddButton(false);
+    setHideSubcategoryAddButton(false);
   }, [form.category]);
 
   const loadSubcategories = async (catId) => {
@@ -52,19 +62,30 @@ export default function CreateProduct() {
     setSubcategories(res.data);
   };
 
-  // -------------------------------------- Add Category
+  // Add Category
   const handleAddCategory = async () => {
     if (!newCategory.trim()) return;
 
-    const res = await api.post("/category/createcategory", { name: newCategory });
+    const res = await api.post("/category/createcategory", {
+      name: newCategory,
+    });
+    const newId = res.data._id;
 
     setNewCategory("");
     setShowAddCategory(false);
-    loadCategories();
-    setForm({ ...form, category: res.data._id });
+
+    setForm((prev) => ({
+      ...prev,
+      category: newId,
+      subcategory: "",
+    }));
+
+    await loadCategories();
+
+    setHideCategoryAddButton(true);
   };
 
-  // -------------------------------------- Add Subcategory
+  // Add Subcategory
   const handleAddSubcategory = async () => {
     if (!newSubcategory.trim()) return;
 
@@ -73,30 +94,35 @@ export default function CreateProduct() {
       category: form.category,
     });
 
+    const newId = res.data._id;
+
     setNewSubcategory("");
     setShowAddSubcategory(false);
-    loadSubcategories(form.category);
-    setForm({ ...form, subcategory: res.data._id });
+
+    setForm((prev) => ({
+      ...prev,
+      subcategory: newId,
+    }));
+
+    await loadSubcategories(form.category);
+
+    setHideSubcategoryAddButton(true);
   };
 
-  // -------------------------------------- Upload Images
+  // Image Upload
   const uploadImages = async () => {
     const uploaded = [];
-
     for (let file of images) {
       const fd = new FormData();
       fd.append("images", file);
-
       const res = await api.post("/uploads", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
       uploaded.push({ url: res.data.url, public_id: res.data.public_id });
     }
     return uploaded;
   };
 
-  // -------------------------------------- Variant Handlers
   const updateVariant = (i, key, value) => {
     const copy = [...variants];
     copy[i][key] = value;
@@ -107,7 +133,6 @@ export default function CreateProduct() {
     setVariants([...variants, { color: "", size: "", stock: "" }]);
   };
 
-  // -------------------------------------- Submit Product
   const submit = async (e) => {
     e.preventDefault();
     try {
@@ -118,9 +143,7 @@ export default function CreateProduct() {
       const payload = {
         ...form,
         price: Number(form.price),
-        discountPrice: form.discountPrice
-          ? Number(form.discountPrice)
-          : null,
+        discountPrice: form.discountPrice ? Number(form.discountPrice) : null,
         stockQuantity: Number(form.stockQuantity),
         tags: form.tags ? form.tags.split(",").map((t) => t.trim()) : [],
         variants: variants.map((v) => ({
@@ -131,7 +154,7 @@ export default function CreateProduct() {
         images: uploadedImages,
       };
 
-      await api.post("/products", payload);
+      await api.post("products/createProduct", payload);
       navigate("/admin/products");
     } catch (err) {
       alert(err?.response?.data?.message || "Product creation failed");
@@ -147,25 +170,22 @@ export default function CreateProduct() {
       </h2>
 
       <form onSubmit={submit} className="space-y-5">
-
-        {/* PRODUCT NAME */}
+        {/* NAME */}
         <input
           placeholder="Product Name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
-          className="border border-green-300 p-2 w-full rounded focus:ring-2 focus:ring-green-500"
+          className="input_base"
         />
 
         {/* DESCRIPTION */}
         <textarea
           placeholder="Description"
           value={form.description}
-          onChange={(e) =>
-            setForm({ ...form, description: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
           required
-          className="border border-green-300 p-2 w-full rounded focus:ring-2 focus:ring-green-500"
+          className="input_base"
         />
 
         {/* CATEGORY */}
@@ -173,48 +193,51 @@ export default function CreateProduct() {
           <label className="font-medium text-green-700">Category *</label>
 
           <div className="flex gap-2 mt-1">
-            <select
+            <CustomDropdown
+              label="Select Category"
               value={form.category}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  category: e.target.value,
-                  subcategory: "",
-                })
-              }
-              className="border border-green-300 p-2 rounded w-full"
-              required
-            >
-              <option value="">Select Category</option>
-              {categories.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              options={categories.map((c) => ({
+                value: c._id,
+                label: c.name,
+              }))}
+              onChange={(val) => {
+                setForm({ ...form, category: val, subCategory: "" });
 
-            <button
-              type="button"
-              onClick={() => setShowAddCategory(!showAddCategory)}
-              className="px-3 py-1 bg-green-600 text-white rounded shadow hover:bg-green-700"
-            >
-              + Add
-            </button>
+                // ⭐ Hide category input if user selects from dropdown
+                if (val) {
+                  setShowAddCategory(false);
+                  setHideCategoryAddButton(false);
+                }
+              }}
+            />
+
+            {!hideCategoryAddButton && (
+              <button
+                type="button"
+                onClick={() => {
+                  setForm({ ...form, category: "", subCategory: "" });
+                  setShowAddCategory(!showAddCategory);
+                  setHideCategoryAddButton(false); // show button again
+                }}
+                className="px-3 py-1 bg-green-600 text-white rounded shadow"
+              >
+                + Add
+              </button>
+            )}
           </div>
 
-          {/* Inline Add Category */}
           {showAddCategory && (
             <div className="flex gap-2 mt-2">
               <input
                 placeholder="New Category"
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                className="border border-green-300 p-2 rounded w-full"
+                className="input_base"
               />
               <button
                 type="button"
                 onClick={handleAddCategory}
-                className="px-4 bg-green-600 text-white rounded hover:bg-green-700"
+                className="px-4 bg-green-600 text-white rounded"
               >
                 Save
               </button>
@@ -227,33 +250,40 @@ export default function CreateProduct() {
           <label className="font-medium text-green-700">Subcategory *</label>
 
           <div className="flex gap-2 mt-1">
-            <select
-              value={form.subcategory}
-              onChange={(e) =>
-                setForm({ ...form, subcategory: e.target.value })
-              }
-              className="border border-green-300 p-2 rounded w-full"
-              required
-            >
-              <option value="">Select Subcategory</option>
-              {subcategories.map((sc) => (
-                <option key={sc._id} value={sc._id}>
-                  {sc.name}
-                </option>
-              ))}
-            </select>
+            <CustomDropdown
+              label="Select Subcategory"
+              value={form.subCategory}
+              options={subcategories.map((c) => ({
+                value: c._id,
+                label: c.name,
+              }))}
+              disabled={!form.category}
+              onChange={(val) => {
+                setForm({ ...form, subCategory: val });
 
-            <button
-              type="button"
-              onClick={() =>
-                form.category
-                  ? setShowAddSubcategory(!showAddSubcategory)
-                  : alert("Select category first")
-              }
-              className="px-3 py-1 bg-green-600 text-white rounded shadow hover:bg-green-700"
-            >
-              + Add
-            </button>
+                // ⭐ Hide subcategory input if user selects from dropdown
+                if (val) {
+                  setShowAddSubcategory(false);
+                  setHideSubcategoryAddButton(false);
+                }
+              }}
+            />
+
+            {!hideSubcategoryAddButton && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!form.category) return alert("Select category first");
+
+                  setForm({ ...form, subCategory: "" });
+                  setShowAddSubcategory(!showAddSubcategory);
+                  setHideSubcategoryAddButton(false);
+                }}
+                className="px-3 py-1 bg-green-600 text-white rounded shadow"
+              >
+                + Add
+              </button>
+            )}
           </div>
 
           {showAddSubcategory && (
@@ -262,12 +292,12 @@ export default function CreateProduct() {
                 placeholder="New Subcategory"
                 value={newSubcategory}
                 onChange={(e) => setNewSubcategory(e.target.value)}
-                className="border border-green-300 p-2 rounded w-full"
+                className="input_base"
               />
               <button
                 type="button"
                 onClick={handleAddSubcategory}
-                className="px-4 bg-green-600 text-white rounded hover:bg-green-700"
+                className="px-4 bg-green-600 text-white rounded"
               >
                 Save
               </button>
@@ -282,7 +312,7 @@ export default function CreateProduct() {
           value={form.price}
           onChange={(e) => setForm({ ...form, price: e.target.value })}
           required
-          className="border border-green-300 p-2 w-full rounded focus:ring-2 focus:ring-green-500"
+          className="input_base"
         />
 
         {/* DISCOUNT PRICE */}
@@ -290,10 +320,8 @@ export default function CreateProduct() {
           type="number"
           placeholder="Discount Price"
           value={form.discountPrice}
-          onChange={(e) =>
-            setForm({ ...form, discountPrice: e.target.value })
-          }
-          className="border border-green-300 p-2 w-full rounded focus:ring-2 focus:ring-green-500"
+          onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
+          className="input_base"
         />
 
         {/* STOCK */}
@@ -301,11 +329,9 @@ export default function CreateProduct() {
           type="number"
           placeholder="Stock Quantity *"
           value={form.stockQuantity}
-          onChange={(e) =>
-            setForm({ ...form, stockQuantity: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })}
           required
-          className="border border-green-300 p-2 w-full rounded focus:ring-2 focus:ring-green-500"
+          className="input_base"
         />
 
         {/* VARIANTS */}
@@ -318,20 +344,20 @@ export default function CreateProduct() {
                 placeholder="Color"
                 value={v.color}
                 onChange={(e) => updateVariant(i, "color", e.target.value)}
-                className="border border-green-300 p-2 rounded"
+                className="input_base"
               />
               <input
                 placeholder="Size"
                 value={v.size}
                 onChange={(e) => updateVariant(i, "size", e.target.value)}
-                className="border border-green-300 p-2 rounded"
+                className="input_base"
               />
               <input
                 placeholder="Stock"
                 type="number"
                 value={v.stock}
                 onChange={(e) => updateVariant(i, "stock", e.target.value)}
-                className="border border-green-300 p-2 rounded"
+                className="input_base"
               />
             </div>
           ))}
@@ -357,7 +383,7 @@ export default function CreateProduct() {
         {/* SUBMIT */}
         <button
           disabled={uploading}
-          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700"
+          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg shadow"
         >
           {uploading ? "Saving..." : "Create Product"}
         </button>
