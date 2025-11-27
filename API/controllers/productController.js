@@ -1,78 +1,102 @@
 import Product from "../models/Product.js";
+import slugify from "slugify";
 
-export const getProducts = async (req, res, next) => {
+export const createProduct = async (req, res) => {
   try {
-    const pageSize = Number(req.query.limit) || 10;
-    const page = Number(req.query.page) || 1;
+    const {
+      name,
+      description,
+      category,
+      subCategory,
+      price,
+      stockQuantity,
+      brand,
+      discountPrice,
+      inStock,
+      images,
+      variants,
+      tags,
+      metaTitle,
+      metaDescription,
+      weight,
+      dimensions,
+    } = req.body;
 
-    const query = {};
-    if (req.query.keyword) {
-      query.name = { $regex: req.query.keyword, $options: "i" };
-    }
-    if (req.query.category) query.category = req.query.category;
-    if (req.query.minPrice || req.query.maxPrice) {
-      query.price = {};
-      if (req.query.minPrice) query.price.$gte = Number(req.query.minPrice);
-      if (req.query.maxPrice) query.price.$lte = Number(req.query.maxPrice);
-    }
-
-    const count = await Product.countDocuments(query);
-    const products = await Product.find(query)
-      .skip(pageSize * (page - 1))
-      .limit(pageSize)
-      .sort({ createdAt: -1 });
-
-    res.json({ products, page, pages: Math.ceil(count / pageSize) });
-  } catch (error) {
-    next(error);
-  }
-};
-export const getProductById = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (product) res.json(product);
-    else {
-      res.status(404);
-      next(new Error("Product not found"));
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-export const createProduct = async (req, res, next) => {
-  try {
-    const product = new Product({ ...req.body });
-    const created = await product.save();
-    res.status(201).json(created);
-  } catch (error) {
-    next(error);
-  }
-};
-export const updateProduct = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      res.status(404);
-      return next(new Error("Product not found"));
+    // 1️⃣ Validate required fields
+    if (
+      !name ||
+      !description ||
+      !category ||
+      !subCategory ||
+      !price ||
+      !stockQuantity
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Name, description, category, subCategory, price & stockQuantity are required",
+      });
     }
 
-    Object.assign(product, req.body);
-    const updated = await product.save();
-    res.json(updated);
-  } catch (error) {
-    next(error);
-  }
-};
-export const deleteProduct = async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      res.status(404);
-      return next(new Error("Product not found"));
+    // 2️⃣ Auto-generate slug
+    const slug = slugify(name, { lower: true });
+
+    // 3️⃣ Prevent duplicate product names (optional but recommended)
+    const existing = await Product.findOne({ slug });
+    if (existing) {
+      return res.status(400).json({
+        success: false,
+        message: "A product with this name already exists",
+      });
     }
-    await product.remove();
-    res.json({ message: "Product removed" });
+
+    // 4️⃣ Create new product object
+    const productData = {
+      name,
+      slug,
+      description,
+      category,
+      subCategory,
+      price,
+      stockQuantity,
+      brand: brand || "Generic",
+      discountPrice: discountPrice || null,
+      inStock: inStock !== undefined ? inStock : true,
+      images: images || [],
+      variants: variants || [],
+      tags: tags || [],
+      metaTitle: metaTitle || name,
+      metaDescription: metaDescription || description.slice(0, 150),
+      weight: weight || null,
+      dimensions: dimensions || null,
+      createdBy: req.user?._id, // from auth middleware
+    };
+
+    // 5️⃣ Save to DB
+    const product = await Product.create(productData);
+
+    // 6️⃣ Return response
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product,
+    });
   } catch (error) {
-    next(error);
+    console.error("Create Product Error:", error);
+
+    // 7️⃣ Handle Mongoose duplicate key error (slug or image id)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Duplicate field detected",
+        field: Object.keys(error.keyValue)[0],
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };

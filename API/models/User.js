@@ -1,6 +1,20 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+const addressSchema = new mongoose.Schema({
+  street: { type: String, trim: true },
+  city: { type: String, trim: true },
+  state: { type: String, trim: true },
+  postalCode: { type: String, trim: true },
+  country: { type: String, trim: true },
+  landmark: { type: String, trim: true },
+  addressType: {
+    type: String,
+    enum: ["Home", "Work"],
+    default: "Home",
+  },
+});
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, "Name is required"], trim: true },
@@ -17,9 +31,28 @@ const userSchema = new mongoose.Schema(
       minLength: 8,
       select: false, // Prevents password from being returned in api responses
     },
+    phone: {
+      type: String,
+      required: function () {
+        return this.role !== "admin"; // required only for normal users
+      },
+    },
+    address: [addressSchema],
+    avatar: {
+      url: String,
+      public_id: String,
+    },
     role: { type: String, enum: ["user", "admin"], default: "user" },
   },
   { timestamps: true }
+);
+
+userSchema.index(
+  { phone: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { role: "user", phone: { $ne: null } },
+  }
 );
 
 userSchema.pre("save", async function (next) {

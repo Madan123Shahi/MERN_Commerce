@@ -10,6 +10,9 @@ import productRoutes from "./routes/products.js";
 import cartRoutes from "./routes/cart.js";
 import orderRoutes from "./routes/orders.js";
 import uploadRoutes from "./routes/upload.js";
+import controllerRoutes from "./routes/Category.Routes.js";
+import subControllerRoutes from "./routes/SubCategory.Routes.js";
+
 // import webhookRoutes from "./routes/webhook.js";
 import { errorHandler, notFound } from "./middleware/error.js";
 
@@ -40,6 +43,8 @@ app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/category", controllerRoutes);
+app.use("/api/subcategory", subControllerRoutes);
 
 // Stripe webhook needs the raw body
 // app.post(
